@@ -1,0 +1,36 @@
+<% content_for :title, @title %>
+
+<div class="col-md-8">
+    <small><%=raw link_to "← back to home", index_path %></small>
+    <h1><%= @episode.number %> - <%= @episode.name %></h1>
+    <div class="description">
+        <%= @episode.description %>
+    </div>
+
+    <div class="notes">
+        <h2>Notes</h2>
+        <%= markdown @episode.notes %>
+    </div>
+
+    <h2>Details</h2>
+    <ul>
+        <li>link: <%= link_to @episode.url, @episode.url %>
+        <li>Duration: <%= @episode.duration.strftime "%M:%S" %>
+        <li>File size: <%= number_to_human_size @episode.file_size %>
+    </ul>
+    <div>
+        <% if @episode.pro %>
+            <%= link_to index_path(filter: ['pro']) do %><span class="label label-warning">Pro</span><% end %>
+        <% else %>
+            <%= link_to index_path(filter: ['free']) do %><span class="label label-success">Free</span><% end %>
+        <% end %>
+        <% if @episode.revised %>
+            <%= link_to index_path(filter: ['revised']) do %><span class="label label-info">Revised</span><% end %>
+        <% end %>
+    </div>
+    <div class="tag-block">
+        <% @episode.tags.each do |tag| %>
+            <%= link_to index_path(filter: [tag.tag]) do %><span class="label label-primary"><%= tag.tag %></span><% end %>
+        <% end %>
+    </div>
+</div>

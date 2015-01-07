@@ -1,0 +1,39 @@
+<% content_for :title, "RailsCasts" %>
+<h1><%= link_to "Episodes", index_path %></h1>
+
+<div class="pull-right col-md-5">
+    <div id="tag-select" class="col-md-6">
+        <h2>Tags</h2>
+        <% @tags.each do |tag| %>
+            <div><%= link_to tag.tag, index_path(filter: [ tag.tag ]), class: ["label", "label-success"] %></div>
+        <% end %>
+    </div>
+    <div id="search-form" class="col-md-6">
+        <h2>Search</h2>
+        <%= form_tag "/", method: "get" do %>
+            <%= text_field_tag :search %>
+            <%= submit_tag "Search", class: ["btn", "btn-success"] %>
+        <% end %>
+    </div>
+</div>
+<div class="col-md-7">
+    <% @episodes.each do |ep| %>
+        <div>
+            <%= ep.number %>
+            -
+            <%= link_to ep.name, episode_path(ep), class: "episode" %>
+            <% ep.tags.each do |tag| %>
+                <%= link_to index_path(filter: [tag.tag]) do %><span class="badge"><%= tag.tag %></span><% end %>
+            <% end %>
+            <% if ep.pro %>
+                <%= link_to index_path(filter: ['pro']) do %><span class="label label-warning">Pro</span><% end %>
+            <% end %>
+            <% if ep.revised %>
+                <%= link_to index_path(filter: ['revised']) do %><span class="label label-info">Revised</span><% end %>
+            <% end %>
+        </div>
+    <% end %>
+    <% if @episodes.count == 0 %>
+        <small>No episodes found...</small>
+    <% end %>
+</div>

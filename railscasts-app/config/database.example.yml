@@ -1,0 +1,17 @@
+default: &default
+  adapter: postgresql
+  host: localhost
+  username: railscasts
+  password: password
+
+development:
+  <<: *default
+  database: railscasts_development
+
+test:
+  <<: *default
+  database: railscasts_test
+
+production:
+  <<: *default
+  database: railscasts_development

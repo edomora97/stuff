@@ -1,0 +1,23 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  number: 1
+  name: MyString
+  url: MyString
+  description: MyString
+  notes: MyString
+  duration: 2015-01-03 18:12:13
+  file_size: 1
+  pro: false
+  revised: false
+
+two:
+  number: 1
+  name: MyString
+  url: MyString
+  description: MyString
+  notes: MyString
+  duration: 2015-01-03 18:12:13
+  file_size: 1
+  pro: false
+  revised: false
