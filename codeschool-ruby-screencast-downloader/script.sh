@@ -6,26 +6,34 @@
 
 # SECOND: load the index page with all the screencast about 'ruby'
 # search all the /screencasts/ url and tail off the unwanted ones
-curl -L https://www.codeschool.com/screencasts/all\?filters%5Bpath%5D\=ruby 2>/dev/null | \
-	egrep "/screencasts/[^\"]+" -o | \
-	head -n -2 | \
-	tail -n +9 > pages.txt
+if [ ! -f pages.txt ]; then
+	curl -L https://www.codeschool.com/screencasts/all\?filters%5Bpath%5D\=ruby 2>/dev/null | \
+		egrep "/screencasts/[^\"]+" -o | \
+		head -n -2 | \
+		tail -n +9 > pages.txt
+else
+	echo "pages.txt already exists. Try removing it to regenerate it"
+fi
 
-# THIRD: reset the urls.txt file
-echo -n "" > urls.txt
+# THIRD: noop!
 
 # FOURTH: foreach screencast load the page and search for the download url,
 # the episode name is the screencast url...
-while read path
-do
-	echo $path
-	url=$(wget --load-cookies=cookies.txt https://www.codeschool.com$path -O - 2>/dev/null | \
-		egrep -o "http://projector.codeschool.com/videos/[^'\"]+" | \
-		sed 's/\&amp;/\&/g' | \
-		head -n1)
-	name=$(echo $path | cut -b 14-)
-	echo "$name | $url" >> urls.txt
-done < pages.txt
+if [ ! -f urls.txt ]; then
+	echo -n "" > urls.txt
+	while read path
+	do
+		echo $path
+		url=$(wget --load-cookies=cookies.txt https://www.codeschool.com$path -O - 2>/dev/null | \
+			egrep -o "http://projector.codeschool.com/videos/[^'\"]+" | \
+			sed 's/\&amp;/\&/g' | \
+			head -n1)
+		name=$(echo $path | cut -b 14-)
+		echo "$name | $url" >> urls.txt
+	done < pages.txt
+else
+	echo "urls.txt already exists. Try removing it to regenerate it"
+fi
 
 # FIFITH: prepare to download the episodes
 mkdir -p videos
@@ -37,8 +45,12 @@ while read line
 do
 	name=$(echo $line | cut -d"|" -f 1 | tr -d '[[:space:]]')
 	url=$(echo $line | cut -d"|" -f 2 | tr -d '[[:space:]]')
-	echo "$i/$count Downloading videos/$name.mp4"
-	wget "$url" -O "videos/$name.mp4" -q
+
+	echo ""
+	echo ""
+	echo " --> $i/$count <-- Downloading videos/$name.mp4"
+	echo ""
+	curl -L "$url" -o "videos/$name.mp4"
 	i=$((i+1))
 done < urls.txt
 
