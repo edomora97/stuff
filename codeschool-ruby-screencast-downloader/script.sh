@@ -50,7 +50,11 @@ do
 	echo ""
 	echo " --> $i/$count <-- Downloading videos/$name.mp4"
 	echo ""
-	curl -L "$url" -o "videos/$name.mp4"
+	if [ ! -f "videos/$name.mp4" ]; then
+		curl -L "$url" -o "videos/$name.mp4"
+	else
+		echo "Skipped!"
+	fi
 	i=$((i+1))
 done < urls.txt
 
