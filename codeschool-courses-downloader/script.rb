@@ -75,16 +75,32 @@ else
 	File.open('courses.json', 'w') { |file| file.write(courses.to_json) }
 end
 
+lang_idx = 1
 courses.each do |lang, crses|
+	puts "[#{lang_idx}/#{courses.length}] Downloading language #{lang}"
+	lang_idx += 1
+	course_idx = 1
+
 	crses.each do |course, levels|
+		levels = levels['levels']
+		puts "   [#{course_idx}/#{crses.length}] Downloading course #{course}"
+		course_idx += 1
+		video_idx = 1
+		video_count = levels.inject(0) { |count, level| count + level['videos'].length }
+
 		`mkdir -p videos/#{lang}/#{course}`
-		levels['levels'].each do |level|
+		levels.each do |level|
 			title = level['title']
-			# if the level has only one video, dont append the part
+
+			# if the level has only one video, dont append the -PartX
 			if level['videos'].length == 1
+				puts "      [#{video_idx}/#{video_count}] Downloading video #{title}.mp4"
+				video_idx += 1
 				`aria2c -s16 -x16 -k1M #{level['videos'][0]} -o videos/#{lang}/#{course}/#{title}.mp4 --allow-overwrite=false --auto-file-renaming=false -q 2>/dev/null`
 			else
 				level['videos'].each_with_index do |url, index|
+					puts "      [#{video_idx}/#{video_count}] Downloading video #{title}-Part#{index+1}.mp4"
+					video_idx += 1
 					`aria2c -s16 -x16 -k1M #{level['videos'][0]} -o videos/#{lang}/#{course}/#{title}-Part#{index+1}.mp4 --allow-overwrite=false --auto-file-renaming=false -q 2>/dev/null`
 				end
 			end
