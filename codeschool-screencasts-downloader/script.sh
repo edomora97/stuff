@@ -136,7 +136,6 @@ do
 	echo ""
 	echo ""
 	green " --> $i/$count <-- Downloading $output"
-	echo ""
 	# try to downlaod the first version, if there is an error, try the second
 	download $first $output || download $second $output
 	i=$((i+1))
