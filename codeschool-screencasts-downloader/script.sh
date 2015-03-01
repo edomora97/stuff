@@ -1,21 +1,29 @@
 #!/bin/bash
 
-# 720p 480p
-quality=720p
+function download {
+	aria2c -s16 -x16 -k1M $1 -o $2 2>/dev/null
+}
+
+quality=auto
 
 # get the parameters
 # -p PATH -> [ruby git javascript html-css ios electives]
-# -q QUALITY
-while getopts p:q: opts; do
+# -q QUALITY -> [auto 720p 480p]
+# -f -> fake
+while getopts p:q:f opts; do
    case ${opts} in
       p) path=${OPTARG} ;;
       q) quality=${OPTARG} ;;
+      f) fake=true
    esac
 done
 
 if [ ! $path ]; then
-	echo "Usage: $0 -p PATH [-q QUALITY]"
+	echo "Usage: $0 -p PATH [-q QUALITY] [-f]"
 	exit 1
+fi
+if [[ $quality == "auto" ]]; then
+	quality="720p|480p"
 fi
 
 # FIRST: create the cookies.txt file with the cookies from a codeschool page.
@@ -46,7 +54,7 @@ else
 	# if the file $path_pages.txt already exists, don't reload it
 	echo "${path}_pages.txt already exists. Try removing it to regenerate it"
 	count=$(cat ${path}_pages.txt | wc -l)
-	if [ $count > 0 ]; then
+	if [[ $count > 0 ]]; then
 		there_are_episodes=true
 	fi
 fi
@@ -67,19 +75,25 @@ if [ ! -f ${path}_urls.txt ]; then
 		# Then find&replace the &amp; with &
 		# Then use the link of the specified quality
 		# And select only the first link
-		url=$(wget --load-cookies=cookies.txt https://www.codeschool.com/screencasts/$episode -O - 2>/dev/null | \
+		urls=$(wget --load-cookies=cookies.txt https://www.codeschool.com/screencasts/$episode -O - 2>/dev/null | \
 			egrep -o "http://projector.codeschool.com/videos/[^'\"]+" | \
 			sed 's/\&amp;/\&/g' | \
-			grep $quality | \
-			head -n1)
+			head -n 2 | \
+			egrep $quality)
+
+		first=$(echo $urls | cut -d" " -f 1)
+		second=$(echo $urls | cut -d" " -f 2)
+
 		# write the title and the url in the $path_urls.txt file
 		# title|url
-		echo "$episode|$url" >> ${path}_urls.txt
+		echo "$episode|$first|$second" >> ${path}_urls.txt
 	done < ${path}_pages.txt
 else
 	# don't overwrite the $path_urls.txt file
 	echo "${path}_urls.txt already exists. Try removing it to regenerate it"
 fi
+
+if [ ! $fake ]; then
 
 # FOURTH: prepare to download the episodes, create the folder and count the episodes
 mkdir -p videos/$path
@@ -89,21 +103,23 @@ i=1
 # FIFTH: download each episode and put them in the videos folder
 while read line
 do
-	# split the line in title|url
+	# split the line in title|url1|url2
 	name=$(echo $line | cut -d"|" -f 1)
-	url=$(echo $line | cut -d"|" -f 2)
+	first=$(echo $line | cut -d"|" -f 2)
+	second=$(echo $line | cut -d"|" -f 3)
+	output="videos/$path/$name.mp4"
 
 	echo ""
 	echo ""
-	echo " --> $i/$count <-- Downloading videos/$path/$name.mp4"
+	echo " --> $i/$count <-- Downloading $output"
 	echo ""
-	# if the video was already downloaded (completly or partially), skip!
-	if [ ! -f "videos/$path/$name.mp4" ]; then
-		curl -L "$url" -o "videos/$path/$name.mp4"
-	else
-		echo "Skipped!"
-	fi
+	# try to downlaod the first version, if there is an error, try the second
+	download $first $output || download $second $output
 	i=$((i+1))
 done < ${path}_urls.txt
+
+else
+	echo "The -f fake option prevented to download the files"
+fi # !fake
 
 # SIXTH: DONE!
