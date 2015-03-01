@@ -1,7 +1,31 @@
 #!/bin/bash
 
+# green echo
+function green {
+  echo -e "\033[0;32m${@}\033[0m"
+}
+
+# red echo
+function red {
+  echo -e "\033[0;31m${@}\033[0m"
+}
+
 function download {
-	aria2c -s16 -x16 -k1M $1 -o $2 2>/dev/null
+	aria2c -s16 -x16 -k1M $1 -o $2 --allow-overwrite=false --auto-file-renaming=false -q 2>/dev/null
+	res=$?
+	case $res in
+		0)
+			green "Download completed!"
+			;;
+		13)
+			red "File already exists!"
+			echo "Remove $2 to redownload it"
+			;;
+		*)
+			red "Error $res! See aria2c manual for detailed info"
+			;;
+	esac
+	return $res
 }
 
 quality=auto
@@ -19,7 +43,7 @@ while getopts p:q:f opts; do
 done
 
 if [ ! $path ]; then
-	echo "Usage: $0 -p PATH [-q QUALITY] [-f]"
+	red "Usage: $0 -p PATH [-q QUALITY] [-f]"
 	exit 1
 fi
 if [[ $quality == "auto" ]]; then
@@ -52,7 +76,7 @@ if [ ! -f ${path}_pages.txt ]; then
 	done
 else
 	# if the file $path_pages.txt already exists, don't reload it
-	echo "${path}_pages.txt already exists. Try removing it to regenerate it"
+	red "${path}_pages.txt already exists. Try removing it to regenerate it"
 	count=$(cat ${path}_pages.txt | wc -l)
 	if [[ $count > 0 ]]; then
 		there_are_episodes=true
@@ -60,7 +84,7 @@ else
 fi
 
 if [ ! $there_are_episodes ]; then
-	echo "No screencasts found for the $path path"
+	red "No screencasts found for the $path path"
 	exit 1
 fi
 
@@ -90,7 +114,7 @@ if [ ! -f ${path}_urls.txt ]; then
 	done < ${path}_pages.txt
 else
 	# don't overwrite the $path_urls.txt file
-	echo "${path}_urls.txt already exists. Try removing it to regenerate it"
+	red "${path}_urls.txt already exists. Try removing it to regenerate it"
 fi
 
 if [ ! $fake ]; then
@@ -111,7 +135,7 @@ do
 
 	echo ""
 	echo ""
-	echo " --> $i/$count <-- Downloading $output"
+	green " --> $i/$count <-- Downloading $output"
 	echo ""
 	# try to downlaod the first version, if there is an error, try the second
 	download $first $output || download $second $output
@@ -119,7 +143,7 @@ do
 done < ${path}_urls.txt
 
 else
-	echo "The -f fake option prevented to download the files"
+	green "The -f fake option prevented to download the files"
 fi # !fake
 
 # SIXTH: DONE!
