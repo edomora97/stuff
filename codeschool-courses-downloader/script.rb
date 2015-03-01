@@ -8,6 +8,10 @@ require 'nokogiri'
 require 'awesome_print'
 require 'json'
 
+def download url, path
+	`aria2c -s16 -x16 -k1M "#{url}" -o "#{path}" --allow-overwrite=false --auto-file-renaming=false`
+end
+
 courses = {}
 language_filter = nil
 course_filter = nil
@@ -96,12 +100,14 @@ courses.each do |lang, crses|
 			if level['videos'].length == 1
 				puts "      [#{video_idx}/#{video_count}] Downloading video #{title}.mp4"
 				video_idx += 1
-				`aria2c -s16 -x16 -k1M #{level['videos'][0]} -o videos/#{lang}/#{course}/#{title}.mp4 --allow-overwrite=false --auto-file-renaming=false -q 2>/dev/null`
+
+				download level['videos'][0], "videos/#{lang}/#{course}/#{title}.mp4"
 			else
 				level['videos'].each_with_index do |url, index|
 					puts "      [#{video_idx}/#{video_count}] Downloading video #{title}-Part#{index+1}.mp4"
 					video_idx += 1
-					`aria2c -s16 -x16 -k1M #{level['videos'][0]} -o videos/#{lang}/#{course}/#{title}-Part#{index+1}.mp4 --allow-overwrite=false --auto-file-renaming=false -q 2>/dev/null`
+
+					download url, "videos/#{lang}/#{course}/#{title}-Part#{index+1}.mp4"
 				end
 			end
 		end
