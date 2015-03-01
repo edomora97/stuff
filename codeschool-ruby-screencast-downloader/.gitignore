@@ -1,4 +1,4 @@
 cookies.txt
 videos/
-urls.txt
-pages.txt
+*_urls.txt
+*_pages.txt
