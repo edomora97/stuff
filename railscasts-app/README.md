@@ -5,9 +5,10 @@ Questa applicazione ti permette di avere i dati di RailsCasts in locale!
 Tutti i diritti appartengono a railscasts.com
 Un grazie super speciale a Ryan Bates per tutto il lavoro che ha fatto!
 
-I dati per popolare il database non vengono forniti :( anche se le api messe
-a disposizione sono abbastanza facili da usare... Ad esempio usando lo script
-nel repository https://github.com/edomora97/stuff
+I dati per popolare il database sono generati usando lo script
+nel repository https://github.com/edomora97/stuff/tree/railscasts/railscasts.
+
+Sono forniti i dati nel formato di pgAdminIII, nella direcotry `db`.
 
 ## How to install
 
