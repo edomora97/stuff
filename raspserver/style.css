@@ -1,0 +1,16 @@
+html {
+  background: lightyellow;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2em;
+}
+
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid;
+  padding: 4px;
+}
