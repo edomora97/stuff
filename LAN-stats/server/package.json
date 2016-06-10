@@ -1,0 +1,9 @@
+{
+  "name": "LAN-stats-server",
+  "description": "A simple LAN-party manager",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "express": "^4.13.3",
+    "socketio": "^1.0.0"
+  }
+}

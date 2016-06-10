@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+    <head>
+        <title>LAN PARTY</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/jquery-2.1.4.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+        <style>
+            .progress-bar {
+                min-width: 2em;
+            }
+            .progress {
+                margin-bottom: 3px;
+            }
+            .cpu { width: 30%; }
+            .ram { width: 10%; }
+            .ping { width: 10%; }
+        </style>
+    </head>
+    <body class="container">
+        <h1>LAN PARTY</h1>
+
+        <table id="clients" class="table">
+            <tr>
+                <th>Username</th>
+                <th class="cpu">CPU</th>
+                <th class="ram">RAM</th>
+                <th class="ping">Ping</th>
+            </tr>
+        </table>
+
+            <script>
+                function addUser(data) {
+                    var tag = $("<tr>")
+                        .attr("data-id", data.id)
+                        .append($("<td>").html(data.username + ' <small>' + data.ip).addClass('username'))
+                        .append($("<td>").addClass('cpu'))
+                        .append($("<td>").text(data.ram).addClass('ram'))
+                        .append($("<td>").text(data.ping).addClass('ping'))
+                    $("#clients").append(tag);
+                }
+                $.get('/cache', function(data) {
+                    for (var k in data) {
+                        var user = data[k];
+                        user.id = k;
+                        addUser(user);
+                    }
+                });
+                var socket = io('http://localhost:3000');
+                socket.on('client_connected', function(data) {
+                    addUser(data);
+                });
+                socket.on('client_disconnected', function(id) {
+                    $('tr[data-id="'+id+'"]').remove();
+                });
+                socket.on('cpu_update', function(data) {
+                    console.log(data);
+                    var parent = $('tr[data-id="'+data.id+'"] .cpu');
+                    parent.empty();
+                    for (var k in data.data) {
+                        var progress = $("<div>").addClass("progress")
+                            .append(
+                                    $("<div>").addClass("progress-bar")
+                                        .width(data.data[k] + "%")
+                                        .text(data.data[k] + "%")
+                            );
+                        parent.append(progress);
+                    }
+                });
+                socket.on('ram_update', function(data) {
+                    $('tr[data-id="'+data.id+'"] .ram').text(data.data);
+                });
+                socket.on('ping_update', function(data) {
+                    console.log(data);
+                    $('tr[data-id="'+data.id+'"] .ping').text(data.data);
+                });
+            </script>
+    </body>
+</html>
